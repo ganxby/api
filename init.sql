@@ -1,0 +1,7 @@
+CREATE TABLE redirect_data
+(
+id SERIAL PRIMARY KEY,
+uid VARCHAR(48),
+url VARCHAR(128),
+ctime TIMESTAMP
+);
