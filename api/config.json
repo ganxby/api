@@ -1,0 +1,7 @@
+{
+  "dbname": "simple_api",
+  "user": "postgres",
+  "password": "admin",
+  "host": "172.24.0.10",
+  "port": 5432
+}

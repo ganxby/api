@@ -1,25 +1,29 @@
 import psycopg2
+import json
 
 from datetime import datetime
 from psycopg2 import errors
 
 
 def database_handler(*args):
-    conn = psycopg2.connect(dbname='simple_api', user='postgres',
-                            password='admin', host='172.24.0.10',
-                            port=5432)
+    f = open('config.json', 'r')
+    parsed_file = json.load(f)
+
+    conn = psycopg2.connect(dbname=parsed_file['dbname'], user=parsed_file['user'],
+                            password=parsed_file['password'], host=parsed_file['host'],
+                            port=parsed_file['port'])
     conn.autocommit = True
 
     cursor = conn.cursor()
 
     try:
-        cursor.execute(args[0])
+        cursor.execute(args[0], args[1])
 
     except psycopg2.errors.lookup("42P01"):
-        return 'Table not found'
+        print('INFO:     [ Table not found ]')
 
     except psycopg2.ProgrammingError as err:
-        return err
+        print(f'INFO:     [ {err} ]')
 
     finally:
         cursor.close()
@@ -28,8 +32,8 @@ def database_handler(*args):
 
 def save_data(uid, url):
     database_handler(
-        f'INSERT INTO redirect_data (uid, url, ctime) '
-        f"VALUES ('{uid}', '{url}', '{datetime.now()}');"
+        """INSERT INTO redirect_data (uid, url, ctime) VALUES (%(uid)s, %(url)s, %(timestamp)s);""",
+        {'uid': uid, 'url': url, 'timestamp': datetime.now()}
     )
 
-    return 1
+    print('INFO:     [ Save redirect data ]')

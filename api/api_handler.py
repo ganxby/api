@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Cookie
+from fastapi import FastAPI, status, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from urllib.parse import urlparse
+
 import services
+
 
 app = FastAPI()
 
@@ -15,26 +18,17 @@ app.add_middleware(
 
 
 @app.get("/api/v1/{track}")
-async def delete_task_by_id(url: str, SVSENDS_UID: str | None = Cookie(default=None)):
+async def redirect_handler(url: str, request: Request):
     if url:
-        try:
-            new_url = '/' + url.split('/', 1)[1]
+        parsed = urlparse(url)
+        new_url = "%s://" % parsed.scheme + parsed.netloc
+        result = parsed.geturl().replace(new_url, '')
 
-            if "'" in new_url:
-                return 'invalid data'
+        if 'SVSENDS_UID' in request.cookies:
+            services.save_data(request.cookies['SVSENDS_UID'], result)
 
-            if SVSENDS_UID:
-                if "'" in SVSENDS_UID:
-                    return 'invalid data'
+            return Response(status_code=status.HTTP_200_OK, content="OK")
 
-                else:
-                    services.save_data(SVSENDS_UID, new_url)
+        return Response(status_code=status.HTTP_400_BAD_REQUEST, content="INVALID UID")
 
-                    return 200
-
-        except IndexError:
-            return 'invalid url'
-
-        return 'no SVSENDS_UID cookie'
-
-    return 'no url'
+    return Response(status_code=status.HTTP_400_BAD_REQUEST, content="INVALID URL")
