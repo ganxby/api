@@ -17,11 +17,11 @@ app.add_middleware(
 )
 
 
-@app.get("/api/v1/{track}")
+@app.get("/api/v1/track")
 async def redirect_handler(url: str, request: Request):
     if url:
         parsed = urlparse(url)
-        new_url = "%s://" % parsed.scheme + parsed.netloc
+        new_url = f'{parsed.scheme}://{parsed.netloc}'
         result = parsed.geturl().replace(new_url, '')
 
         if 'SVSENDS_UID' in request.cookies:
